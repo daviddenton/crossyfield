@@ -57,6 +57,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         } yield (first, second)
       }
       ex <--? "" shouldBe Validated((Some(123), Some(456)))
+      ex validate "" shouldBe Validated((Some(123), Some(456)))
     }
 
     it("invalid when first is invalid") {
@@ -82,6 +83,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     it("handles cross field validation failure") {
       val ex = Validator.mk { s: String => Validated(s) }
       ex <--?("bob", "reason", _ != "bob") shouldBe Invalid("reason")
+      ex validate("bob", "reason", _ != "bob") shouldBe Invalid("reason")
     }
 
     it("handles cross field validation success") {
@@ -102,6 +104,11 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     describe("misc methods") {
+      it("toString") {
+        Validated(1).toString shouldBe "Validated(1)"
+        Ignored.toString shouldBe "Ignored"
+        Invalid(Seq("invalid", "missing")).toString shouldBe "Invalid(List(invalid, missing))"
+      }
       it("flatten") {
         Validation.flatten(Ignored) shouldBe Ignored
         Validation.flatten(Validated(None)) shouldBe Ignored

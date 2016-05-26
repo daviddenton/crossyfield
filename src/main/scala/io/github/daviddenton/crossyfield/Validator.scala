@@ -73,7 +73,7 @@ case class Validated[T](value: T) extends Validation[T] {
   */
 object Ignored extends Validation[Nothing] {
 
-  override def toString = getClass.getSimpleName
+  override def toString = "Ignored"
 
   def flatMap[O](f: Option[Nothing] => Validation[O]) = f(None)
 
