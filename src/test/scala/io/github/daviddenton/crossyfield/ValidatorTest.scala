@@ -109,6 +109,11 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         Ignored.toString shouldBe "Ignored"
         Invalid(Seq("invalid", "missing")).toString shouldBe "Invalid(List(invalid, missing))"
       }
+      it("map") {
+        Validated(1).map(_ => 1) shouldBe Validated(1)
+        Ignored.map(_ => 1) shouldBe Validated(1)
+        Invalid(Seq("invalid", "missing")).map(_ => 1) shouldBe Invalid(Seq("invalid", "missing"))
+      }
       it("flatten") {
         Validation.flatten(Ignored) shouldBe Ignored
         Validation.flatten(Validated(None)) shouldBe Ignored
