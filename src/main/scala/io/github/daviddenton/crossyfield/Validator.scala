@@ -1,18 +1,18 @@
 package io.github.daviddenton.crossyfield
 
-trait Validatable[-From, +T] {
+trait Validator[-From, +T] {
   def <--?(from: From): Validation[T]
 
   final def <--?(from: From, reason: String, predicate: T => Boolean): Validation[T] =
-    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Validation(v) else ValidationFailed(reason))
+    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Validation(v) else Invalid(reason))
 
-  final def extract(from: From): Validation[T] = <--?(from)
+  final def validate(from: From): Validation[T] = <--?(from)
 
-  final def extract(from: From, reason: String, predicate: T => Boolean): Validation[T] = <--?(from, reason, predicate)
+  final def validate(from: From, reason: String, predicate: T => Boolean): Validation[T] = <--?(from, reason, predicate)
 }
 
-object Validatable {
-  def mk[From, T](fn: From => Validation[T]): Validatable[From, T] = new Validatable[From, T] {
+object Validator {
+  def mk[From, T](fn: From => Validation[T]): Validator[From, T] = new Validator[From, T] {
     override def <--?(from: From): Validation[T] = fn(from)
   }
 }
@@ -35,14 +35,14 @@ object Validation {
     */
   def combine(extractions: Seq[Validation[_]]): Validation[Nothing] = {
     val missingOrFailed = extractions.flatMap {
-      case ValidationFailed(ip) => ip
+      case Invalid(ip) => ip
       case _ => Nil
     }
-    if (missingOrFailed.isEmpty) Ignored else ValidationFailed(missingOrFailed)
+    if (missingOrFailed.isEmpty) Ignored else Invalid(missingOrFailed)
   }
 
   /**
-    * Wraps in a successful Validation - this assumes the item was not mandatory.
+    * Wraps in a successful Validation - this assumes the object was not mandatory.
     */
   def apply[T](t: Option[T]): Validation[T] = t.map(Validated(_)).getOrElse(Ignored)
 
@@ -53,12 +53,12 @@ object Validation {
     extraction match {
       case Validated(opt) => opt.map(Validated(_)).getOrElse(Ignored)
       case Ignored => Ignored
-      case ValidationFailed(ip) => ValidationFailed(ip)
+      case Invalid(ip) => Invalid(ip)
     }
 }
 
 /**
-  * Represents a object which was provided and validated successfully
+  * Represents a object which was provided and validated successfully.
   */
 case class Validated[T](value: T) extends Validation[T] {
   def flatMap[O](f: Option[T] => Validation[O]) = f(Some(value))
@@ -69,11 +69,11 @@ case class Validated[T](value: T) extends Validation[T] {
 }
 
 /**
-  * Represents an Ignored object which was not provided - this is a non-failing case
+  * Represents an object which was optional and missing. Ie. still a passing case.
   */
 object Ignored extends Validation[Nothing] {
 
-  override def toString = "Optional"
+  override def toString = getClass.getSimpleName
 
   def flatMap[O](f: Option[Nothing] => Validation[O]) = f(None)
 
@@ -83,16 +83,16 @@ object Ignored extends Validation[Nothing] {
 }
 
 /**
-  * Represents a object which could not be extracted due to it being invalid or missing when required
+  * Represents a object which could not be validated due to it being invalid or missing when mandatory.
   */
-case class ValidationFailed(invalid: Seq[String]) extends Validation[Nothing] {
-  def flatMap[O](f: Option[Nothing] => Validation[O]) = ValidationFailed(invalid)
+case class Invalid(invalid: Seq[String]) extends Validation[Nothing] {
+  def flatMap[O](f: Option[Nothing] => Validation[O]) = Invalid(invalid)
 
-  override def map[O](f: Option[Nothing] => O) = ValidationFailed(invalid)
+  override def map[O](f: Option[Nothing] => O) = Invalid(invalid)
 
   override def orDefault[T](f: => T): Validation[T] = this
 }
 
-object ValidationFailed {
-  def apply(p: String): ValidationFailed = ValidationFailed(Seq(p))
+object Invalid {
+  def apply(p: String): Invalid = Invalid(Seq(p))
 }
