@@ -1,7 +1,7 @@
 package io.github.daviddenton.crossyfield
 
 /**
-  * Convienience Validators
+  * Convenience Validators
   */
 object Validators {
 
