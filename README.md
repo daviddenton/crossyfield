@@ -19,6 +19,7 @@ Crossyfield has no dependencies.
 ## Learn it
 The library provides a single concept, the `Extractor`, which exposes a couple of `<--?()` methods to provide extraction/validation operations. The result of 
 the extraction operation is one of 3 Case classes:
+
 1. `Extracted[T]` - when the object was successfully extracted
 2. `NotProvided` - when the object was missing, but was optional
 3. `Invalid(Seq(Symbol -> String))` - when the object was invalid or missing when required. Contains a sequence of errors denoting the failures
