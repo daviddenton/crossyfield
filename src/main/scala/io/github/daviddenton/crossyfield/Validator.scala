@@ -8,13 +8,25 @@ import scala.util.{Failure, Success, Try}
 trait Validator[-From, +T] {
   val identifier: Symbol
 
+  /**
+    * Performs validation
+    */
   def <--?(from: From): Validation[T]
 
+  /**
+    * Performs validation. Synonym for <--?().
+    */
+  final def validate(from: From): Validation[T] = <--?(from)
+
+  /**
+    * Performs validation and applies the predicate to achieve a result.
+    */
   final def <--?(from: From, error: String, predicate: T => Boolean): Validation[T] =
     <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Validation(v) else Invalid((identifier, error)))
 
-  final def validate(from: From): Validation[T] = <--?(from)
-
+  /**
+    * Performs validation and applies the predicate to achieve a result. Synonym for <--?().
+    */
   final def validate(from: From, reason: String, predicate: T => Boolean): Validation[T] = <--?(from, reason, predicate)
 }
 
@@ -22,6 +34,9 @@ object Validator {
 
   type ValidationError = (Symbol, String)
 
+  /**
+    * Constructs a simple Mandatory validator from applying the passed Validator function
+    */
   def mk[From, T](id: Symbol)(fn: From => Validation[T]): Validator[From, T] = new Validator[From, T] {
     override val identifier = id
 
@@ -29,7 +44,8 @@ object Validator {
   }
 
   /**
-    * Constructs a simple validator from a function, returns either
+    * Constructs a simple Mandatory validator for from a function, returns either Validated or Invalid upon
+    * an failure from the function
     */
   def mk[From, T](id: Symbol, message: String, fn: From => T): Validator[From, T] = new Validator[From, T] {
     override val identifier: Symbol = id
@@ -53,6 +69,10 @@ sealed trait Validation[+T] {
 }
 
 object Validation {
+
+  /**
+    * Collect errors together from several validations.
+    */
   def collectErrors(validations: Validation[_]*): Seq[ValidationError] = <--?(validations) match {
     case Invalid(ip) => ip
     case _ => Nil

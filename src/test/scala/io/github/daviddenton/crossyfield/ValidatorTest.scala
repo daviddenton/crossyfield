@@ -81,14 +81,19 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     it("handles cross field validation failure") {
-      val ex = Validator.mk('ex) { s: String => Validated(s) }
+      val ex = Validator.mk('ex, "a reason" , (s: String) => s )
       ex <--?("bob", "reason", _ != "bob") shouldBe Invalid('ex, "reason")
       ex validate("bob", "reason", _ != "bob") shouldBe Invalid('ex, "reason")
     }
 
     it("handles cross field validation success") {
-      val ex = Validator.mk('ex) { s: String => Validated(s) }
+      val ex = Validator.mk('ex, "a reason" , (s: String) => s )
       ex <--?("bob", "reason", _ == "bob") shouldBe Validated("bob")
+    }
+
+    it("validation failure - function throws") {
+      val ex = Validator.mk('ex, "a reason" , (s: String) => throw new RuntimeException() )
+      ex <--?("bob", "reason", _ == "bob") shouldBe Invalid('ex, "a reason")
     }
 
     describe("falling back to default value") {
@@ -114,13 +119,18 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         Ignored.map(_ => 1) shouldBe Validated(1)
         Invalid(Seq('ex -> "invalid", 'ex -> "missing")).map(_ => 1) shouldBe Invalid(Seq('ex -> "invalid", 'ex -> "missing"))
       }
+      it("collectErrors") {
+        Validation.collectErrors() shouldBe Nil
+        Validation.collectErrors(Ignored, Validated(Some(1), Validated(None))) shouldBe Nil
+        Validation.collectErrors(Invalid('ex -> "invalid")) shouldBe Seq('ex -> "invalid")
+      }
       it("flatten") {
         Validation.flatten(Ignored) shouldBe Ignored
         Validation.flatten(Validated(None)) shouldBe Ignored
         Validation.flatten(Validated(Some(1))) shouldBe Validated(1)
-        Validation.flatten(Invalid(Seq('ex -> "invalid"))) shouldBe Invalid(Seq('ex -> "invalid"))
+        Validation.flatten(Invalid('ex -> "invalid")) shouldBe Invalid('ex -> "invalid")
       }
-      it("combine") {
+      it("<--?") {
         Validation.<--?(Seq(Ignored, Ignored)) shouldBe Ignored
         Validation.<--?(Seq(Validated(1), Validated(1))) shouldBe Ignored
         Validation.<--?(Seq(Ignored, Validated(1), Invalid('ex -> "missing"), Invalid('ex -> "invalid"))) shouldBe Invalid(Seq('ex -> "missing", 'ex -> "invalid"))
