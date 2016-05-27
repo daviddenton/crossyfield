@@ -12,14 +12,14 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
 
     it("embedded extraction") {
 
-      val validateInner = Validator.mk {
+      val validateInner = Validator.mk('inner) {
         s: String => for {
           a <- Ignored
           c <- Validated(1)
         } yield Inner(a, c.get)
       }
 
-      val validateOuter = Validator.mk {
+      val validateOuter = Validator.mk('outer) {
         s: String => for {
           inner <- validateInner <--? s
           e <- Validated(true)
@@ -30,7 +30,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     it("does not short circuit if all lines in a for comprehension are Ignored") {
-      val ex = Validator.mk {
+      val ex = Validator.mk('ex) {
         s: String => for {
           first <- Ignored
           second <- Ignored
@@ -40,7 +40,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     it("does not short circuit if last line in a for comprehension is optional") {
-      val ex = Validator.mk {
+      val ex = Validator.mk('ex) {
         s: String => for {
           first <- Validated(123)
           second <- Ignored
@@ -50,7 +50,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     it("when all are validated") {
-      val ex = Validator.mk {
+      val ex = Validator.mk('ex) {
         s: String => for {
           first <- Validated(123)
           second <- Validated(456)
@@ -61,33 +61,33 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
     }
 
     it("invalid when first is invalid") {
-      val ex = Validator.mk {
+      val ex = Validator.mk('ex) {
         s: String => for {
-          first <- Invalid("reason")
+          first <- Invalid('first, "reason")
           second <- Validated(456)
         } yield (first, second)
       }
-      ex <--? "" shouldBe Invalid("reason")
+      ex <--? "" shouldBe Invalid('first, "reason")
     }
 
     it("only reports the first failure") {
-      val ex = Validator.mk {
+      val ex = Validator.mk('ex) {
         s: String => for {
-          first <- Invalid("reason")
-          second <- Invalid("reason2")
+          first <- Invalid('first, "reason")
+          second <- Invalid('second, "reason2")
         } yield (first, second)
       }
-      ex <--? "" shouldBe Invalid("reason")
+      ex <--? "" shouldBe Invalid('first, "reason")
     }
 
     it("handles cross field validation failure") {
-      val ex = Validator.mk { s: String => Validated(s) }
-      ex <--?("bob", "reason", _ != "bob") shouldBe Invalid("reason")
-      ex validate("bob", "reason", _ != "bob") shouldBe Invalid("reason")
+      val ex = Validator.mk('ex) { s: String => Validated(s) }
+      ex <--?("bob", "reason", _ != "bob") shouldBe Invalid('ex, "reason")
+      ex validate("bob", "reason", _ != "bob") shouldBe Invalid('ex, "reason")
     }
 
     it("handles cross field validation success") {
-      val ex = Validator.mk { s: String => Validated(s) }
+      val ex = Validator.mk('ex) { s: String => Validated(s) }
       ex <--?("bob", "reason", _ == "bob") shouldBe Validated("bob")
     }
 
@@ -99,7 +99,7 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         Ignored.orDefault(true) shouldBe Validated(true)
       }
       it("ValidationFailed") {
-        Invalid("name").orDefault(true) shouldBe Invalid("name")
+        Invalid('ex, "name").orDefault(true) shouldBe Invalid('ex, "name")
       }
     }
 
@@ -107,23 +107,23 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
       it("toString") {
         Validated(1).toString shouldBe "Validated(1)"
         Ignored.toString shouldBe "Ignored"
-        Invalid(Seq("invalid", "missing")).toString shouldBe "Invalid(List(invalid, missing))"
+        Invalid(Seq('ex -> "invalid", 'ex -> "missing")).toString shouldBe "Invalid(List(('ex,invalid), ('ex,missing)))"
       }
       it("map") {
         Validated(1).map(_ => 1) shouldBe Validated(1)
         Ignored.map(_ => 1) shouldBe Validated(1)
-        Invalid(Seq("invalid", "missing")).map(_ => 1) shouldBe Invalid(Seq("invalid", "missing"))
+        Invalid(Seq('ex -> "invalid", 'ex -> "missing")).map(_ => 1) shouldBe Invalid(Seq('ex -> "invalid", 'ex -> "missing"))
       }
       it("flatten") {
         Validation.flatten(Ignored) shouldBe Ignored
         Validation.flatten(Validated(None)) shouldBe Ignored
         Validation.flatten(Validated(Some(1))) shouldBe Validated(1)
-        Validation.flatten(Invalid(Seq("invalid"))) shouldBe Invalid(Seq("invalid"))
+        Validation.flatten(Invalid(Seq('ex -> "invalid"))) shouldBe Invalid(Seq('ex -> "invalid"))
       }
       it("combine") {
-        Validation.combine(Seq(Ignored, Ignored)) shouldBe Ignored
-        Validation.combine(Seq(Ignored, Validated(1))) shouldBe Ignored
-        Validation.combine(Seq(Ignored, Validated(1), Invalid("missing"), Invalid("invalid"))) shouldBe Invalid(Seq("missing", "invalid"))
+        Validation.<--?(Seq(Ignored, Ignored)) shouldBe Ignored
+        Validation.<--?(Seq(Validated(1), Validated(1))) shouldBe Ignored
+        Validation.<--?(Seq(Ignored, Validated(1), Invalid('ex -> "missing"), Invalid('ex -> "invalid"))) shouldBe Invalid(Seq('ex -> "missing", 'ex -> "invalid"))
       }
     }
   }

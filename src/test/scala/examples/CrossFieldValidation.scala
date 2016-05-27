@@ -6,7 +6,7 @@ import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validated, Validator
 
 import scala.util.{Failure, Success, Try}
 
-object DateRanges extends App {
+object CrossFieldValidation extends App {
 
   /**
     * Simple case class which represents an item we wish to validate
@@ -16,28 +16,28 @@ object DateRanges extends App {
   /**
     * This validator checks that there is a valid date string at the specified index in the CSV string
     */
-  def dateValidator(index: Int, required: Boolean) = Validator.mk {
+  def dateValidator(symbol: Symbol, index: Int, required: Boolean) = Validator.mk(symbol) {
     in: String =>
       Try(in.split(",")(index)) match {
         case Success(dateStr) if !dateStr.isEmpty =>
           Try(LocalDate.parse(dateStr)) match {
             case Success(date) => Validated(date)
-            case Failure(e) => Invalid(s"Invalid date at index $index")
+            case Failure(e) => Invalid(symbol -> s"Invalid date at index $index")
           }
         case Success(dateStr) if !required => Ignored
-        case _ => Invalid(s"Missing date at index $index")
+        case _ => Invalid(symbol -> s"Missing date at index $index")
       }
   }
 
-  val startDate = dateValidator(0, required = true)
-  val middleDate = dateValidator(1, required = false)
-  val endDate = dateValidator(2, required = true)
+  val startDate = dateValidator('startDate, 0, required = true)
+  val middleDate = dateValidator('middleDate, 1, required = false)
+  val endDate = dateValidator('endDate, 2, required = true)
 
   /**
     * This composite Validator shows has other Validators embedded in it's logic. You can cross validate the result
     * of any
     */
-  val rangeValidation = Validator.mk {
+  val rangeValidation = Validator.mk('range) {
     input: String => {
       for {
         startDate <- startDate <--? input

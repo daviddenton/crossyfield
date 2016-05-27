@@ -1,10 +1,13 @@
 package io.github.daviddenton.crossyfield
 
+import io.github.daviddenton.crossyfield.Validator.ValidationError
+
 trait Validator[-From, +T] {
+  val identifier: Symbol
   def <--?(from: From): Validation[T]
 
-  final def <--?(from: From, reason: String, predicate: T => Boolean): Validation[T] =
-    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Validation(v) else Invalid(reason))
+  final def <--?(from: From, error: String, predicate: T => Boolean): Validation[T] =
+    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Validation(v) else Invalid((identifier, error)))
 
   final def validate(from: From): Validation[T] = <--?(from)
 
@@ -12,7 +15,11 @@ trait Validator[-From, +T] {
 }
 
 object Validator {
-  def mk[From, T](fn: From => Validation[T]): Validator[From, T] = new Validator[From, T] {
+
+  type ValidationError = (Symbol, String)
+
+  def mk[From, T](id: Symbol)(fn: From => Validation[T]): Validator[From, T] = new Validator[From, T] {
+    override val identifier = id
     override def <--?(from: From): Validation[T] = fn(from)
   }
 }
@@ -29,12 +36,17 @@ sealed trait Validation[+T] {
 }
 
 object Validation {
+  def collectErrors(validations: Validation[_]*): Seq[ValidationError] = <--?(validations) match {
+    case Invalid(ip) => ip
+    case _ => Nil
+  }
+
   /**
     * Utility method for combining the results of many Validation into a single Validation, simply to get an overall
     * validation result in the case of failure.
     */
-  def combine(extractions: Seq[Validation[_]]): Validation[Nothing] = {
-    val missingOrFailed = extractions.flatMap {
+  def <--?(validations: Seq[Validation[_]]): Validation[Nothing] = {
+    val missingOrFailed = validations.flatMap {
       case Invalid(ip) => ip
       case _ => Nil
     }
@@ -85,7 +97,7 @@ object Ignored extends Validation[Nothing] {
 /**
   * Represents a object which could not be validated due to it being invalid or missing when mandatory.
   */
-case class Invalid(invalid: Seq[String]) extends Validation[Nothing] {
+case class Invalid(invalid: Seq[ValidationError]) extends Validation[Nothing] {
   def flatMap[O](f: Option[Nothing] => Validation[O]) = Invalid(invalid)
 
   override def map[O](f: Option[Nothing] => O) = Invalid(invalid)
@@ -94,5 +106,5 @@ case class Invalid(invalid: Seq[String]) extends Validation[Nothing] {
 }
 
 object Invalid {
-  def apply(p: String): Invalid = Invalid(Seq(p))
+  def apply(p: ValidationError): Invalid = Invalid(Seq(p))
 }
