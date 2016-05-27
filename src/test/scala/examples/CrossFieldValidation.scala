@@ -2,9 +2,9 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validated, Validator}
+import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validator}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 object CrossFieldValidation extends App {
 
@@ -16,16 +16,12 @@ object CrossFieldValidation extends App {
   /**
     * This validator checks that there is a valid date string at the specified index in the CSV string
     */
-  def dateValidator(symbol: Symbol, index: Int, required: Boolean) = Validator.mk(symbol) {
+  def dateValidator(identifier: Symbol, index: Int, required: Boolean) = Validator.mk(identifier) {
     in: String =>
       Try(in.split(",")(index)) match {
-        case Success(dateStr) if !dateStr.isEmpty =>
-          Try(LocalDate.parse(dateStr)) match {
-            case Success(date) => Validated(date)
-            case Failure(e) => Invalid(symbol -> s"Invalid date at index $index")
-          }
+        case Success(dateStr) if !dateStr.isEmpty => Validator.mk(identifier, "invalid date", LocalDate.parse) <--? dateStr
         case Success(dateStr) if !required => Ignored
-        case _ => Invalid(symbol -> s"Missing date at index $index")
+        case _ => Invalid(identifier -> s"Missing date at index $index")
       }
   }
 
@@ -41,7 +37,7 @@ object CrossFieldValidation extends App {
     input: String => {
       for {
         startDate <- startDate <--? input
-        middleDate <- middleDate <--?(input, "middle date not after start", (i: LocalDate) => i.isAfter(startDate.get))
+        middleDate <- middleDate <--?(input, "middle date not after start", _.isAfter(startDate.get))
         endDate <- endDate <--?(input, "end date not after start", e => startDate.map(s => e.isAfter(s)).getOrElse(true))
       } yield Range(startDate.get, middleDate, endDate.get)
     }

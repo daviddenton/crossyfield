@@ -2,11 +2,9 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validated, Validation, Validator}
+import io.github.daviddenton.crossyfield.{Ignored, Validation, Validator}
 
-import scala.util.{Failure, Success, Try}
-
-object MultiStageValidation extends App {
+object CollectErrors extends App {
 
   /**
     * Simple case class which represents an item we wish to validate
@@ -19,10 +17,7 @@ object MultiStageValidation extends App {
   def dateValidator(identifier: Symbol) = Validator.mk(identifier) {
     in: String =>
       if (in.isEmpty) Ignored
-      else Try(LocalDate.parse(in)) match {
-        case Success(date) => Validated(date)
-        case Failure(e) => Invalid(identifier, s"Invalid date")
-      }
+      else Validator.mk(identifier, "invalid date", LocalDate.parse) <--? in
   }
 
   val millennium = LocalDate.of(2000, 1, 1)

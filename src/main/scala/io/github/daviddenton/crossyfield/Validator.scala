@@ -2,8 +2,12 @@ package io.github.daviddenton.crossyfield
 
 import io.github.daviddenton.crossyfield.Validator.ValidationError
 
+import scala.language.implicitConversions
+import scala.util.{Failure, Success, Try}
+
 trait Validator[-From, +T] {
   val identifier: Symbol
+
   def <--?(from: From): Validation[T]
 
   final def <--?(from: From, error: String, predicate: T => Boolean): Validation[T] =
@@ -20,7 +24,20 @@ object Validator {
 
   def mk[From, T](id: Symbol)(fn: From => Validation[T]): Validator[From, T] = new Validator[From, T] {
     override val identifier = id
+
     override def <--?(from: From): Validation[T] = fn(from)
+  }
+
+  /**
+    * Constructs a simple validator from a function, returns either
+    */
+  def mk[From, T](id: Symbol, message: String, fn: From => T): Validator[From, T] = new Validator[From, T] {
+    override val identifier: Symbol = id
+
+    override def <--?(from: From): Validation[T] = Try(fn(from)) match {
+      case Success(value) => Validated(value)
+      case Failure(e) => Invalid(identifier, message)
+    }
   }
 }
 
