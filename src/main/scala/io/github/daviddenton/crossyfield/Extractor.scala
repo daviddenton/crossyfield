@@ -2,7 +2,6 @@ package io.github.daviddenton.crossyfield
 
 import io.github.daviddenton.crossyfield.Extractor.ExtractionError
 
-import scala.language.implicitConversions
 import scala.util.{Failure, Success, Try}
 
 trait Extractor[-From, +T] {
