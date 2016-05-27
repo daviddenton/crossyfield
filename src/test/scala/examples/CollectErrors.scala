@@ -7,17 +7,12 @@ import io.github.daviddenton.crossyfield.{Ignored, Validation, Validator}
 object CollectErrors extends App {
 
   /**
-    * Simple case class which represents an item we wish to validate
+    * Provides an Optional validator
     */
-  case class Range(startDate: LocalDate, middleDate: Option[LocalDate], endDate: LocalDate)
-
-  /**
-    * This validator checks that the string parses to a date
-    */
-  def dateValidator(identifier: Symbol) = Validator.mk(identifier) {
+  def dateValidator(id: Symbol) = Validator.mk(id) {
     in: String =>
       if (in.isEmpty) Ignored
-      else Validator.mk(identifier, "invalid date", LocalDate.parse) <--? in
+      else Validator.mk(id, "invalid date", LocalDate.parse) <--? in
   }
 
   val millennium = LocalDate.of(2000, 1, 1)

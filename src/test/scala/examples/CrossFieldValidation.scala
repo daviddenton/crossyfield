@@ -14,14 +14,14 @@ object CrossFieldValidation extends App {
   case class Range(startDate: LocalDate, middleDate: Option[LocalDate], endDate: LocalDate)
 
   /**
-    * This validator checks that there is a valid date string at the specified index in the CSV string
+    * Provides validator that checks there is a valid date string at the specified index in the CSV string
     */
-  def dateValidator(identifier: Symbol, index: Int, required: Boolean) = Validator.mk(identifier) {
+  def dateValidator(id: Symbol, index: Int, required: Boolean) = Validator.mk(id) {
     in: String =>
       Try(in.split(",")(index)) match {
-        case Success(dateStr) if !dateStr.isEmpty => Validator.mk(identifier, "invalid date", LocalDate.parse) <--? dateStr
+        case Success(dateStr) if !dateStr.isEmpty => Validator.mk(id, "invalid date", LocalDate.parse) <--? dateStr
         case Success(dateStr) if !required => Ignored
-        case _ => Invalid(identifier -> s"Missing date at index $index")
+        case _ => Invalid(id -> s"Missing date at index $index")
       }
   }
 
@@ -30,8 +30,7 @@ object CrossFieldValidation extends App {
   val endDate = dateValidator('endDate, 2, required = true)
 
   /**
-    * This composite Validator shows has other Validators embedded in it's logic. You can cross validate the result
-    * of any
+    * This composite Validator shows has other Validators embedded in it's logic. You can cross-validate the result
     */
   val rangeValidation = Validator.mk('range) {
     input: String => {
