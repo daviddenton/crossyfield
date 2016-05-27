@@ -2,7 +2,7 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validator}
+import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validator, Validators}
 
 import scala.util.{Success, Try}
 
@@ -19,7 +19,7 @@ object CrossFieldValidation extends App {
   def dateValidator(id: Symbol, index: Int, required: Boolean) = Validator.mk(id) {
     in: String =>
       Try(in.split(",")(index)) match {
-        case Success(dateStr) if !dateStr.isEmpty => Validator.mk(id, "invalid date", LocalDate.parse) <--? dateStr
+        case Success(dateStr) if !dateStr.isEmpty => Validators.string.required.localDate(id) <--? dateStr
         case Success(dateStr) if !required => Ignored
         case _ => Invalid(id -> s"Missing date at index $index")
       }

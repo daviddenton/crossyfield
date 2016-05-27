@@ -1,8 +1,5 @@
 package io.github.daviddenton.crossyfield
 
-import java.time.{LocalDate, LocalDateTime, ZonedDateTime}
-import java.util.UUID
-
 import io.github.daviddenton.crossyfield.Validator.ValidationError
 
 import scala.language.implicitConversions
@@ -149,33 +146,3 @@ object Invalid {
   def apply(p: ValidationError): Invalid = Invalid(Seq(p))
 }
 
-/**
-  * Convenience Validators
-  */
-object Validators {
-
-  object string {
-    def int(id: Symbol, msg: String = "invalid int") = Validator.mk(id, msg, (s: String) => s.toInt)
-
-    def double(id: Symbol, msg: String = "invalid double") = Validator.mk(id, msg, (s: String) => s.toDouble)
-
-    def long(id: Symbol, msg: String = "invalid long") = Validator.mk(id, msg, (s: String) => s.toLong)
-
-    def float(id: Symbol, msg: String = "invalid float") = Validator.mk(id, msg, (s: String) => s.toFloat)
-
-    def uuid(id: Symbol, msg: String = "invalid uuid") = Validator.mk(id, msg, UUID.fromString)
-
-    def bigDecimal(id: Symbol, msg: String = "invalid bigDecimal") = Validator.mk(id, msg, (s: String) => BigDecimal(s))
-
-    def boolean(id: Symbol, msg: String = "invalid boolean") = Validator.mk(id, "invalid float", (s: String) => s.toBoolean)
-
-    def char(id: Symbol, msg: String = "invalid boolean") = Validator.mk(id, msg, (s: String) => s.charAt(0))
-
-    def localDateTime(id: Symbol, msg: String = "invalid localDateTime") = Validator.mk(id, msg, LocalDateTime.parse)
-
-    def localDate(id: Symbol, msg: String = "invalid localDate") = Validator.mk(id, msg, LocalDate.parse)
-
-    def zonedDateTime(id: Symbol, msg: String = "invalid zonedDateTime") = Validator.mk(id, msg, ZonedDateTime.parse)
-  }
-
-}

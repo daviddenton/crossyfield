@@ -1,8 +1,5 @@
 package io.github.daviddenton.crossyfield
 
-import java.time.{LocalDate, LocalDateTime}
-import java.util.UUID
-
 import org.scalatest._
 
 class ValidatorTest extends FunSpec with ShouldMatchers {
@@ -139,23 +136,5 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         Validation.<--?(Seq(Ignored, Validated(1), Invalid('ex -> "missing"), Invalid('ex -> "invalid"))) shouldBe Invalid(Seq('ex -> "missing", 'ex -> "invalid"))
       }
     }
-
-    describe("Validators") {
-      it("string") {
-        val uuid = UUID.randomUUID()
-        Validators.string.int('id) <--? "1" shouldBe Validated(1)
-        Validators.string.long('id) <--? "1" shouldBe Validated(1)
-        Validators.string.double('id) <--? "1" shouldBe Validated(1.0d)
-        Validators.string.float('id) <--? "1" shouldBe Validated(1.0f)
-        (Validators.string.boolean('id) <--? "true") shouldBe Validated(true)
-        Validators.string.char('id) <--? "1.2345" shouldBe Validated('1')
-        Validators.string.localDate('id) <--? "2000-01-01" shouldBe Validated(LocalDate.of(2000, 1, 1))
-        Validators.string.localDateTime('id) <--? "1970-01-01T00:00:00" shouldBe Validated(LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0))
-        (Validators.string.zonedDateTime('id) <--? "1970-01-01T00:00:00-00:00").toString shouldBe "Validated(1970-01-01T00:00Z)"
-        Validators.string.bigDecimal('id) <--? "1.2345" shouldBe Validated(BigDecimal("1.2345"))
-        Validators.string.uuid('id) <--? uuid.toString shouldBe Validated(uuid)
-      }
-    }
-
   }
 }
