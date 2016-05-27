@@ -18,9 +18,9 @@ object CollectErrors extends App {
   val millennium = LocalDate.of(2000, 1, 1)
 
   val errors = Validation.collectErrors(
-    dateValidator('startDate) <--?("2000-01-01", "after the millenium", _.isAfter(millennium)),
-    dateValidator('middleDate) <--?("1999-01-01", "after the millenium", _.isAfter(millennium)),
-    dateValidator('startDate) <--?("2003-01-01", "after the millenium", _.isAfter(millennium))
+    dateValidator('theFuture) <--?("2000-01-01", "must be after the millennium", _.isAfter(millennium)),
+    dateValidator('anyOldDate) <--? "ASDA-01-01",
+    dateValidator('thePast) <--?("2003-01-01", "must be before the millennium", _.isBefore(millennium))
   )
 
   println("Erroneous fields: " + errors.mkString(", "))
