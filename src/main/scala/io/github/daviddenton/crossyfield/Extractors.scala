@@ -1,15 +1,15 @@
 package io.github.daviddenton.crossyfield
 
 /**
-  * Convenience Validators
+  * Convenience Extractors
   */
-object Validators {
+object Extractors {
 
   /**
     * Converting to various primitive types from a String
     */
   object string {
-    val optional = new PrimitiveValidators(false)
-    val required = new PrimitiveValidators(true)
+    val optional = new PrimitiveExtractors(false)
+    val required = new PrimitiveExtractors(true)
   }
 }

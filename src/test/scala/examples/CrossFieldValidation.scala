@@ -2,37 +2,37 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Ignored, Invalid, Validator, Validators}
+import io.github.daviddenton.crossyfield.{Extractor, Extractors, Invalid}
 
 import scala.util.{Success, Try}
 
 object CrossFieldValidation extends App {
 
   /**
-    * Simple case class which represents an item we wish to validate
+    * Simple case class which represents an item we wish to extract and validate
     */
   case class Range(startDate: LocalDate, middleDate: Option[LocalDate], endDate: LocalDate)
 
   /**
-    * Provides validator that checks there is a valid date string at the specified index in the CSV string
+    * Provides an Extractor that checks there is a valid date string at the specified index in the CSV string
     */
-  def dateValidator(id: Symbol, index: Int, required: Boolean) = Validator.mk(id) {
+  def dateExtractor(id: Symbol, index: Int, required: Boolean): Extractor[String, LocalDate] = Extractor.mk(id) {
     in: String =>
       Try(in.split(",")(index)) match {
-        case Success(dateStr) if !dateStr.isEmpty => Validators.string.required.localDate(id) <--? dateStr
-        case Success(dateStr) if !required => Ignored
+        case Success(dateStr) if required => Extractors.string.required.localDate(id) <--? dateStr
+        case Success(dateStr) => Extractors.string.optional.localDate(id) <--? dateStr
         case _ => Invalid(id -> s"Missing date at index $index")
       }
   }
 
-  val startDate = dateValidator('startDate, 0, required = true)
-  val middleDate = dateValidator('middleDate, 1, required = false)
-  val endDate = dateValidator('endDate, 2, required = true)
+  val startDate = dateExtractor('startDate, 0, required = true)
+  val middleDate = dateExtractor('middleDate, 1, required = false)
+  val endDate = dateExtractor('endDate, 2, required = true)
 
   /**
-    * This composite Validator shows has other Validators embedded in it's logic. You can cross-validate the result
+    * This composite Extractor shows has other Extractors embedded in it's logic. You can cross-extract the result
     */
-  val rangeValidation = Validator.mk('range) {
+  val rangeExtraction = Extractor.mk('range) {
     input: String => {
       for {
         startDate <- startDate <--? input
@@ -42,11 +42,11 @@ object CrossFieldValidation extends App {
     }
   }
 
-  println("Empty string: ", rangeValidation <--? "")
-  println("Fully specified range: ", rangeValidation <--? "2000-01-01,2001-01-01,2002-01-01")
-  println("Missing middle date: ", rangeValidation <--? "2000-01-01,,2002-01-01")
-  println("Middle date is before start: ", rangeValidation <--? "2001-01-01,2000-01-01,2002-01-01")
-  println("End date is before start: ", rangeValidation <--? "2001-01-01,2002-01-01,2000-01-01")
-  println("Perform further validation on the output object of the range", rangeValidation <--?("2000-01-01,2001-01-01,2002-01-01", "range is too new", _.startDate.isBefore(LocalDate.of(1990, 1,1 ))))
+  println("Empty string: ", rangeExtraction <--? "")
+  println("Fully specified range: ", rangeExtraction <--? "2000-01-01,2001-01-01,2002-01-01")
+  println("Missing middle date: ", rangeExtraction <--? "2000-01-01,,2002-01-01")
+  println("Middle date is before start: ", rangeExtraction <--? "2001-01-01,2000-01-01,2002-01-01")
+  println("End date is before start: ", rangeExtraction <--? "2001-01-01,2002-01-01,2000-01-01")
+  println("Perform further extraction on the output object of the range", rangeExtraction <--?("2000-01-01,2001-01-01,2002-01-01", "range is too new", _.startDate.isBefore(LocalDate.of(1990, 1, 1))))
 
 }

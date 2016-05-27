@@ -7,7 +7,7 @@ organization := orgName
 
 name := projectName
 
-description := "Cross-field object validation for fun and profit"
+description := "Cross-field object extraction for fun and profit"
 
 scalaVersion := "2.11.8"
 

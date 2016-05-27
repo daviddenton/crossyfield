@@ -3,10 +3,10 @@ package io.github.daviddenton.crossyfield
 import java.time.{LocalDate, LocalDateTime, ZonedDateTime}
 import java.util.UUID
 
-class PrimitiveValidators(required: Boolean) {
+class PrimitiveExtractors(required: Boolean) {
   private def mk[T](id: Symbol, msg: String, required: Boolean, fn: String => T) =
-    Validator.mk(id) {
-      in: String => if (in.isEmpty && !required) Ignored else Validator.mk(id, msg, fn) <--? in
+    Extractor.mk(id) {
+      in: String => if (in.isEmpty && !required) NotProvided else Extractor.mk(id, msg, fn) <--? in
     }
 
   def int(id: Symbol, msg: String = "invalid int") = mk(id, msg, required, (s: String) => s.toInt)
