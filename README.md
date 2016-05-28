@@ -14,7 +14,7 @@ resolvers += "JCenter" at "https://jcenter.bintray.com"
 libraryDependencies += "io.github.daviddenton" %% "crossyfield" % "1.2.0"
 ```
 
-Crossyfield has no dependencies. 
+Crossyfield has no dependencies.
 
 ## Learn it
 The library provides a single concept, the `Extractor`, which exposes a couple of `<--?()` methods to provide extraction/validation operations. The result of 
