@@ -7,7 +7,7 @@
 This library attempts to provide a nice way of performing cross-field validation in Scala `for comprehensions`.
 
 ## Get it
-Add the following lines to ```build.sbt```:
+The library is hosted in both Maven Central and JCenter. Add the following lines to ```build.sbt```:
 
 ```scala
 resolvers += "JCenter" at "https://jcenter.bintray.com"
