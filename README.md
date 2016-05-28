@@ -24,7 +24,10 @@ the extraction operation is one of 3 case class instances:
 2. `NotProvided` - when the object was missing, but was optional
 3. `Invalid(Seq(Symbol -> String))` - when the object was invalid or missing when required. Contains a sequence of errors denoting the failures
 
-The `Extractors` can be used in `for comprehensions` and chained in a graph. The first failure in the extraction chain will short-circuit the operations 
+The library can be used in a couple of ways, depending on your use case:
+
+#### Option 1: Cross-field validation
+The `Extractors` can be used in `for comprehensions` and chained in a graph, with subsequent extractions dependant on those before. The first failure in the extraction chain will short-circuit the operations 
 and return an `Invalid` instance containing the error. Extractors can either just check for presence of well formatted values, or optionally apply validation rules on the result.
 
 Below is an example using a custom date range which is extracted from a CSV string. The implementation checks that the optional range end date is after the start date:
@@ -51,6 +54,26 @@ val rangeExtraction: Extractor[String, Range] = Extractor.mk('range) {
 rangeExtraction <--? "2000-01-01,2002-01-01" match {
     case Extracted(value) => println(s"I successfully extracted $value")
     case NotProvided => println(s"Nothing was extracted")
-    case Invalid(e) => println(s"I got these errors: $e")
+    case Invalid(e) => println(s"I got this error: $e")
 }
 ```
+
+#### Option 2: Error collection
+When you require all of the errors encountered in an extraction e.g. for Form validation, you can simply perform multiple extractions and combine the results:
+```scala
+// Provides an optional Extractor using convenience methods
+def dateExtractor(id: Symbol) = Extractors.string.optional.localDate(id)
+
+val millennium = LocalDate.of(2000, 1, 1)
+
+/**
+  * Because we are interested in collecting ALL of the errors, we can't use cross-field extraction here
+  */
+val errors: Seq[(Symbol, String)] = Extraction.collectErrors(
+  dateExtractor('theFuture) <--?("2000-01-01", "must be after the millennium", _.isAfter(millennium)),
+  dateExtractor('anyOldDate) <--? "NOTADATE-01-01",
+  dateExtractor('thePast) <--?("2003-01-01", "must be before the millennium", _.isBefore(millennium))
+)
+```
+
+
