@@ -32,10 +32,11 @@ Below is an example using a custom date range which is extracted from a CSV stri
 ```scala
 case class Range(startDate: LocalDate, endDate: Option[LocalDate])
 
-val startDate = Extractor.mk('startDate, "invalid start date", (s: String) => LocalDate.parse(s))
-val endDate = Extractor.mk('endDate, "invalid end date", (s: String) => LocalDate.parse(s))
+// Extractor[FromType, ToType]
+val startDate: Extractor[String, LocalDate] = Extractor.mk('startDate, "invalid start date", (s: String) => LocalDate.parse(s))
+val endDate: Extractor[String, LocalDate] = Extractor.mk('endDate, "invalid end date", (s: String) => LocalDate.parse(s))
 
-val rangeExtraction = Extractor.mk('range) {
+val rangeExtraction: Extractor[String, Range] = Extractor.mk('range) {
   input: String => {
     val parts = input.split(",")
 
@@ -44,5 +45,12 @@ val rangeExtraction = Extractor.mk('range) {
       endDate <- endDate <--?(parts(1), "end date not after start", e => startDate.map(s => e.isAfter(s)).getOrElse(true))
     } yield Range(startDate.get, endDate)
   }
-} dod
+}
+
+// now we can actually use our extractor on some input
+rangeExtraction <--? "2000-01-01,2002-01-01" match {
+    case Extracted(value) => println(s"I successfully extracted $value")
+    case NotProvided => println(s"Nothing was extracted")
+    case Invalid(e) => println(s"I got these errors: $e")
+}
 ```
