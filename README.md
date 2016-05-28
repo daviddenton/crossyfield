@@ -30,20 +30,19 @@ and return an `Invalid` instance containing the error. Extractors can either jus
 Below is an example using a custom date range which is extracted from a CSV string. The implementation checks that the optional range end date is after the start date:
 
 ```scala
-  case class Range(startDate: LocalDate, endDate: Option[LocalDate])
+case class Range(startDate: LocalDate, endDate: Option[LocalDate])
 
-  val startDate = Extractor.mk('startDate, "invalid start date", (s: String) => LocalDate.parse(s))
-  val endDate = Extractor.mk('endDate, "invalid end date", (s: String) => LocalDate.parse(s))
+val startDate = Extractor.mk('startDate, "invalid start date", (s: String) => LocalDate.parse(s))
+val endDate = Extractor.mk('endDate, "invalid end date", (s: String) => LocalDate.parse(s))
 
-  val rangeExtraction = Extractor.mk('range) {
-    input: String => {
-      val parts = input.split(",")
+val rangeExtraction = Extractor.mk('range) {
+  input: String => {
+    val parts = input.split(",")
 
-      for {
-        startDate <- startDate <--? parts(0)
-        endDate <- endDate <--?(parts(1), "end date not after start", e => startDate.map(s => e.isAfter(s)).getOrElse(true))
-      } yield Range(startDate.get, endDate)
-    }
+    for {
+      startDate <- startDate <--? parts(0)
+      endDate <- endDate <--?(parts(1), "end date not after start", e => startDate.map(s => e.isAfter(s)).getOrElse(true))
+    } yield Range(startDate.get, endDate)
   }
-
+} dod
 ```
