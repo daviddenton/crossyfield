@@ -30,12 +30,14 @@ object Magnet {
 
   def apply[A](magnet: Magnet[A])(implicit desired: Manifest[A]) = magnet.apply(desired)
 
-  implicit def tupleToMagnet[T](a: (T)): Magnet[T] = new Magnet[T]
+  implicit def t2ToMagnet[A, B](a: (A, B)): Magnet[(A, B)] = new Magnet[(A, B)]
+
+  implicit def t3ToMagnet[A, B, C](a: (A, B, C)): Magnet[(A, B, C)] = new Magnet[(A, B, C)]
 }
 
 object MagnetApp extends App {
 
-  private val it1 = Magnet(1)
+  private val it1 = Magnet(1, 3)
   private val out = it1 {
     case it1.Args(a, b) => "asd " + a + b
   }
