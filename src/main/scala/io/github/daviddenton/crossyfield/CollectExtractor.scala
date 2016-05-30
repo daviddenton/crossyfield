@@ -99,26 +99,35 @@ import scala.language.implicitConversions
 //  def apply(p: (Symbol, String)): CollectInvalid = CollectInvalid(Seq(p))
 //}
 
-trait ExtMagnet[Result] {
+trait ExtMagnet[From, Result] {
   type In
 
-  def apply(): Function[PartialFunction[In, Result], Result]
+  def apply(): Function[PartialFunction[In, Result], Function[From, Extraction[Result]]]
 }
 
 object ExtMagnet {
-  implicit def fromT2[A, B, Result](tuple: (A, B)): ExtMagnet[Result] =
-    new ExtMagnet[Result] {
-      type In = (A, B)
+  implicit def tuple2[A, B, From, Result](tuple: (Extractor[From, A], Extractor[From, B])): ExtMagnet[From, Result] =
+    new ExtMagnet[From, Result] {
+      override type In = (Option[A], Option[B])
 
-      def apply() = pf => pf.apply(tuple)
+      override def apply() = pf => from => {
+
+        Extraction.<--?(Seq(tuple._1 <--? from, tuple._2 <--? from)) match {
+          case Invalid(ip) => Invalid(ip)
+          case _ => Extracted(pf.apply(None, None))
+        }
+      }
     }
 }
 
 object Bob extends App {
-  def composite[Int](extMagnet: ExtMagnet[Int]) = extMagnet.apply()
+  def composite[From, Int](extMagnet: ExtMagnet[From, Int]) = extMagnet.apply()
 
-  val a = composite[Int](1, 2) {
-    case (as: Int, bs: Int) => as + bs
+  val a = composite[String, Int](
+    Extractors.string.required.int('bob),
+    Extractors.string.required.int('bob2)
+  ) {
+    case (as: Option[Int], bs: Option[Int]) => as.flatMap(a => bs.map(b => a + b)).getOrElse(1)
   }
-  println(a)
+  println(a.apply("sdf"))
 }
