@@ -20,9 +20,9 @@ abstract class Bob[A](desired: Manifest[A]) extends Function[PartialFunction[A, 
 }
 
 class Magnet[A](a: A) {
-  def apply(implicit desired: Manifest[A]) = new Function[PartialFunction[A, String], Function[A, String]] {
+  def apply(implicit desired: Manifest[A]) = new Function[PartialFunction[A, String], String] {
     val Args = new Args2[A](desired)
-    override def apply(pf: PartialFunction[A, String]): Function[A, String] = (in: A) => pf(Args.unapply(a).get)
+    override def apply(pf: PartialFunction[A, String]): String = pf(Args.unapply(a).get)
   }
 }
 
@@ -41,7 +41,6 @@ object MagnetApp extends App {
   private val out = it1 {
     case (a, b) => "asd " + a + b
   }
-
-  println(out(Option(1), Option(2)))
+  println(out)
 
 }
