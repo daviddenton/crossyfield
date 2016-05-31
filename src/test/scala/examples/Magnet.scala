@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 sealed trait ExtractedValue[T]
 
-class Args2[T](desired: Manifest[T]) {
+class ArgExtractor[T](desired: Manifest[T]) {
   def unapply[X](c: X)(implicit m: Manifest[X]): Option[T] = {
     def sameArgs = desired.typeArguments.zip(m.typeArguments).forall { case (d, actual) => d >:> actual }
     if (desired >:> m && sameArgs) Some(c.asInstanceOf[T])
@@ -12,16 +12,9 @@ class Args2[T](desired: Manifest[T]) {
   }
 }
 
-case class Extracted[T](t: T) extends ExtractedValue[T]
-
-case class Missing[T]() extends ExtractedValue[T]
-
-abstract class Bob[A](desired: Manifest[A]) extends Function[PartialFunction[A, String], Function[A, String]] {
-}
-
 class Magnet[A](a: A) {
   def apply(implicit desired: Manifest[A]) = new Function[PartialFunction[A, String], String] {
-    val Args = new Args2[A](desired)
+    val Args = new ArgExtractor[A](desired)
     override def apply(pf: PartialFunction[A, String]): String = pf(Args.unapply(a).get)
   }
 }
@@ -30,9 +23,9 @@ object Magnet {
 
   def apply[A](magnet: Magnet[A])(implicit desired: Manifest[A]) = magnet.apply(desired)
 
-  implicit def t2ToMagnet[A, B](in: (A, B)): Magnet[(A, B)] = new Magnet[(A, B)](in)
+  implicit def t2ToMagnet[A, B](in: (A, B))(implicit desired: Manifest[A]): Magnet[(A, B)] = new Magnet[(A, B)](in)
 
-  implicit def t3ToMagnet[A, B, C](in: (A, B, C)): Magnet[(A, B, C)] = new Magnet[(A, B, C)](in)
+  implicit def t3ToMagnet[A, B, C](in: (A, B, C))(implicit desired: Manifest[A]): Magnet[(A, B, C)] = new Magnet[(A, B, C)](in)
 }
 
 object MagnetApp extends App {
