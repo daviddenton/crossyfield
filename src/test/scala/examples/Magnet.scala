@@ -12,20 +12,20 @@ class ArgExtractor[T](desired: Manifest[T]) {
   }
 }
 
-class Magnet[A](a: A) {
-  def apply(implicit desired: Manifest[A]) = new Function[PartialFunction[A, String], String] {
-    val Args = new ArgExtractor[A](desired)
-    override def apply(pf: PartialFunction[A, String]): String = pf(Args.unapply(a).get)
+class Magnet[In](in: In) {
+  def apply(implicit desired: Manifest[In]) = new Function[PartialFunction[In, String], String] {
+    val Args = new ArgExtractor[In](desired)
+    override def apply(pf: PartialFunction[In, String]): String = pf(Args.unapply(in).get)
   }
 }
 
 object Magnet {
 
-  def apply[A](magnet: Magnet[A])(implicit desired: Manifest[A]) = magnet.apply(desired)
+  def apply[In](magnet: Magnet[In])(implicit desired: Manifest[In]) = magnet.apply(desired)
 
-  implicit def t2ToMagnet[A, B](in: (A, B))(implicit desired: Manifest[A]): Magnet[(A, B)] = new Magnet[(A, B)](in)
+  implicit def t2ToMagnet[A, B](in: (A, B)): Magnet[(A, B)] = new Magnet[(A, B)](in)
 
-  implicit def t3ToMagnet[A, B, C](in: (A, B, C))(implicit desired: Manifest[A]): Magnet[(A, B, C)] = new Magnet[(A, B, C)](in)
+  implicit def t3ToMagnet[A, B, C](in: (A, B, C)): Magnet[(A, B, C)] = new Magnet[(A, B, C)](in)
 }
 
 object MagnetApp extends App {
