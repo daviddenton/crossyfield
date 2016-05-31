@@ -13,9 +13,10 @@ class ArgExtractor[T](desired: Manifest[T]) {
 }
 
 class Magnet[In](in: In) {
-  def apply(implicit desired: Manifest[In]) = new Function[PartialFunction[In, String], String] {
+  type Result = String
+  def apply(implicit desired: Manifest[In]) = new Function[PartialFunction[In, Result], Result] {
     val Args = new ArgExtractor[In](desired)
-    override def apply(pf: PartialFunction[In, String]): String = pf(Args.unapply(in).get)
+    override def apply(pf: PartialFunction[In, Result]): Result = pf(Args.unapply(in).get)
   }
 }
 
