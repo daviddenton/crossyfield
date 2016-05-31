@@ -30,9 +30,9 @@ object Magnet {
 
   def apply[A](magnet: Magnet[A])(implicit desired: Manifest[A]) = magnet.apply(desired)
 
-  implicit def t2ToMagnet[A, B](a: (A, B)): Magnet[(A, B)] = new Magnet[(A, B)](a)
+  implicit def t2ToMagnet[A, B](in: (A, B)): Magnet[(A, B)] = new Magnet[(A, B)](in)
 
-  implicit def t3ToMagnet[A, B, C](a: (A, B, C)): Magnet[(A, B, C)] = new Magnet[(A, B, C)](a)
+  implicit def t3ToMagnet[A, B, C](in: (A, B, C)): Magnet[(A, B, C)] = new Magnet[(A, B, C)](in)
 }
 
 object MagnetApp extends App {
