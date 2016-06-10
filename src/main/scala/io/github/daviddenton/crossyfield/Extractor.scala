@@ -1,6 +1,6 @@
 package io.github.daviddenton.crossyfield
 
-import io.github.daviddenton.crossyfield.Extractor.ExtractionError
+import io.github.daviddenton.crossyfield.ExtractionResult.ExtractionError
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,8 +30,6 @@ trait Extractor[-From, +T] {
 }
 
 object Extractor {
-
-  type ExtractionError = (Symbol, String)
 
   /**
     * Constructs a simple Mandatory Extractor from applying the passed Extractor function
