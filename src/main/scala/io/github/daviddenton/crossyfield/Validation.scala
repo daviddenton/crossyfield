@@ -32,5 +32,8 @@ object Validation {
 
   implicit def tuple5ToValidation[A, B, C, D, E](in: (Extraction[A], Extraction[B], Extraction[C], Extraction[D], Extraction[E])): Validation[(Option[A], Option[B], Option[C], Option[D], Option[E])] =
     new Validation(in, (extract(in._1), extract(in._2), extract(in._3), extract(in._4), extract(in._5)))
+
+  implicit def tuple6ToValidation[A, B, C, D, E, F](in: (Extraction[A], Extraction[B], Extraction[C], Extraction[D], Extraction[E], Extraction[F])): Validation[(Option[A], Option[B], Option[C], Option[D], Option[E], Option[F])] =
+    new Validation(in, (extract(in._1), extract(in._2), extract(in._3), extract(in._4), extract(in._5), extract(in._6)))
 }
 
