@@ -2,7 +2,7 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Extraction, Extractors}
+import io.github.daviddenton.crossyfield.{Extractors, Validation}
 
 object CollectErrors extends App {
 
@@ -13,14 +13,20 @@ object CollectErrors extends App {
 
   val millennium = LocalDate.of(2000, 1, 1)
 
+  case class SomeDateStrings(futureDate: String, oldDate: String, pastDate: String)
   /**
     * Because we are interested in collecting ALL of the errors, we can't use cross-field extraction here
+    * - use a Validation instead
     */
-  val errors = Extraction.collectErrors(
-    dateExtractor('theFuture) <--?("2000-01-01", "must be after the millennium", _.isAfter(millennium)),
-    dateExtractor('anyOldDate) <--? "NOTADATE-01-01",
-    dateExtractor('thePast) <--?("2003-01-01", "must be before the millennium", _.isBefore(millennium))
-  )
+  def validate(input: SomeDateStrings) = Validation.mk(
+    dateExtractor('theFuture) <--?(input.futureDate, "must be after the millennium", _.isAfter(millennium)),
+    dateExtractor('anyOldDate) <--? input.oldDate,
+    dateExtractor('thePast) <--?(input.pastDate, "must be before the millennium", _.isBefore(millennium))
+  ) {
+    case (a, b, c) => s"validated ok: $a, $b, $c"
+  }
 
-  println("Erroneous fields: " + errors.mkString(", "))
+  println(validate(SomeDateStrings("2010-01-01", "2000-01-01", "1999-01-01")))
+
+  println(validate(SomeDateStrings("2000-01-01", "NOTADATE-01-01", "2003-01-01")))
 }
