@@ -12,6 +12,7 @@ abstract class ExtractionM[In <: Product](val extractors: Product) {
 
   private def toErrors(tuple: Product) = tuple
     .productIterator
+    .filter(_.isInstanceOf[Extraction[_]])
     .map(_.asInstanceOf[Extraction[_]]).
     toList.flatMap {
     case Invalid(q) => q
@@ -19,7 +20,7 @@ abstract class ExtractionM[In <: Product](val extractors: Product) {
   }
 
   def bob(a: Product, in: In) = new Function[PartialFunction[In, Result], Extraction[Result]] {
-    override def apply(pf: PartialFunction[In, Result]): Extraction[Result] = if (toErrors(a).isEmpty) Extracted(pf(in)) else Invalid(toErrors(in))
+    override def apply(pf: PartialFunction[In, Result]): Extraction[Result] = if (toErrors(a).isEmpty) Extracted(pf(in)) else Invalid(toErrors(a))
   }
 
 }
@@ -42,7 +43,7 @@ object MagnetApp extends App {
   private val bbb = Extractors.string.required.int('asd2)
 
   private val m = ExtractionM(
-    int <--? "12v23",
+    int <--? "12s23",
     bbb <--? "321")
   println(m {
     case (a, b) => "asd " + a + b
