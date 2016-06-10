@@ -21,7 +21,7 @@ object Validation {
     case Invalid(_) => None
   }
 
-  def apply[In <: Product](validation: Validation[In]) = validation
+  def mk[In <: Product](validation: Validation[In]) = validation
 
   implicit def tuple2ToMagnet[A, B](in: (Extraction[A], Extraction[B])): Validation[(Option[A], Option[B])] =
     new Validation(in, (extract(in._1), extract(in._2)))

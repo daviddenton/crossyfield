@@ -9,7 +9,10 @@ object MagnetApp extends App {
   private val int = Extractors.string.optional.int('asd)
   private val bbb = Extractors.string.optional.int('asd2)
 
-  val extracted = Validation(int <--? "", bbb <--? "") {
+  val extracted = Validation.mk(
+    int <--? "",
+    bbb <--? ""
+  ) {
     case (a, b) => "as " + a + b
   }
 
