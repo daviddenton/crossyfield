@@ -4,14 +4,14 @@ import io.github.daviddenton.crossyfield.{Extracted, Extraction, Extractors, Inv
 
 import scala.language.implicitConversions
 
-class ExtractionM[In <: Product](extractors: Product, fn: () => In) extends Function[PartialFunction[In, String], Extraction[String]] {
+class ExtractionM[In <: Product](extractors: Product, fn: () => In)  {
 
   private val errors = extractors.productIterator.filter(_.isInstanceOf[Extraction[_]]).map(_.asInstanceOf[Extraction[_]]).toList.flatMap {
     case Invalid(q) => q
     case _ => Nil
   }
 
-  override def apply(pf: PartialFunction[In, String]): Extraction[String] = if (errors.isEmpty) Extracted(pf(fn())) else Invalid(errors)
+  def apply[Result](pf: PartialFunction[In, Result]): Extraction[Result] = if (errors.isEmpty) Extracted(pf(fn())) else Invalid(errors)
 }
 
 object ExtractionM {
@@ -33,7 +33,7 @@ object MagnetApp extends App {
     int <--? "123",
     bbb <--? "321")
   println(m {
-    case (a, b) => "asd " + a + b
+    case (a, b) => a.get + b.get
   })
 
 }
