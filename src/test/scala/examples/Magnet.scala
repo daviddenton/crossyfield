@@ -15,10 +15,10 @@ class Validation[In <: Product] private(extractors: Product, value: => In) {
 
 object Validation {
 
-  type E[T] = Extraction[T]
-  type O[T] = Option[T]
+  type Ex[T] = Extraction[T]
+  type Op[T] = Option[T]
 
-  private def getFrom[T](e: E[T]): Option[T] = e match {
+  private def extract[T](e: Ex[T]): Option[T] = e match {
     case Extracted(v) => Some(v)
     case NotProvided => None
     case Invalid(_) => None
@@ -26,19 +26,26 @@ object Validation {
 
   def apply[In <: Product](validation: Validation[In]) = validation
 
-  implicit def t2ToMagnet[A, B](in: (E[A], E[B])): Validation[(O[A], O[B])] = new Validation(in, (getFrom(in._1), getFrom(in._2)))
+  implicit def tuple2ToMagnet[A, B](in: (Ex[A], Ex[B])): Validation[(Op[A], Op[B])] =
+    new Validation(in, (extract(in._1), extract(in._2)))
 
-  implicit def t3ToMagnet[A, B, C](in: (E[A], E[B], E[C])): Validation[(O[A], O[B], O[C])] = new Validation(in, (getFrom(in._1), getFrom(in._2), getFrom(in._3)))
+  implicit def tuple3ToMagnet[A, B, C](in: (Ex[A], Ex[B], Ex[C])): Validation[(Op[A], Op[B], Op[C])] =
+    new Validation(in, (extract(in._1), extract(in._2), extract(in._3)))
+
+  implicit def tuple4ToMagnet[A, B, C, D](in: (Ex[A], Ex[B], Ex[C], Ex[D])): Validation[(Op[A], Op[B], Op[C], Op[D])] =
+    new Validation(in, (extract(in._1), extract(in._2), extract(in._3), extract(in._4)))
+
+  implicit def tuple5ToMagnet[A, B, C, D, E](in: (Ex[A], Ex[B], Ex[C], Ex[D], Ex[E])): Validation[(Op[A], Op[B], Op[C], Op[D], Op[E])] =
+    new Validation(in, (extract(in._1), extract(in._2), extract(in._3), extract(in._4), extract(in._5)))
 }
 
 
 object MagnetApp extends App {
-
   private val int = Extractors.string.optional.int('asd)
-  private val bbb = Extractors.string.required.int('asd2)
+  private val bbb = Extractors.string.optional.int('asd2)
 
-  val e = Validation(int <--? "123", bbb <--? "321") {
-    case (a, b) => "as " + a.get + b.get
+  val e = Validation(int <--? "", bbb <--? "") {
+    case (a, b) => "as " + a + b
   }
 
   e match {
