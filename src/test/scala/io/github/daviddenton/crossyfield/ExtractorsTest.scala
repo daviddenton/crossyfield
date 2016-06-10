@@ -11,47 +11,47 @@ class ExtractorsTest extends FunSpec with ShouldMatchers {
     val uuid = UUID.randomUUID()
     describe("string.required") {
       it("success") {
-        Extractors.string.required.int('id) <--? "1" shouldBe Extracted(1)
-        Extractors.string.required.long('id) <--? "1" shouldBe Extracted(1)
-        Extractors.string.required.double('id) <--? "1" shouldBe Extracted(1.0d)
-        Extractors.string.required.float('id) <--? "1" shouldBe Extracted(1.0f)
-        (Extractors.string.required.boolean('id) <--? "true") shouldBe Extracted(true)
-        Extractors.string.required.char('id) <--? "1.2345" shouldBe Extracted('1')
-        Extractors.string.required.localDate('id) <--? "2000-01-01" shouldBe Extracted(LocalDate.of(2000, 1, 1))
-        Extractors.string.required.localDateTime('id) <--? "1970-01-01T00:00:00" shouldBe Extracted(LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0))
-        (Extractors.string.required.zonedDateTime('id) <--? "1970-01-01T00:00:00-00:00").toString shouldBe "Extracted(1970-01-01T00:00Z)"
-        Extractors.string.required.bigDecimal('id) <--? "1.2345" shouldBe Extracted(BigDecimal("1.2345"))
-        Extractors.string.required.uuid('id) <--? uuid.toString shouldBe Extracted(uuid)
+        Extractors.string.required.int('id) <--? "1" shouldBe Successful(1)
+        Extractors.string.required.long('id) <--? "1" shouldBe Successful(1)
+        Extractors.string.required.double('id) <--? "1" shouldBe Successful(1.0d)
+        Extractors.string.required.float('id) <--? "1" shouldBe Successful(1.0f)
+        (Extractors.string.required.boolean('id) <--? "true") shouldBe Successful(true)
+        Extractors.string.required.char('id) <--? "1.2345" shouldBe Successful('1')
+        Extractors.string.required.localDate('id) <--? "2000-01-01" shouldBe Successful(LocalDate.of(2000, 1, 1))
+        Extractors.string.required.localDateTime('id) <--? "1970-01-01T00:00:00" shouldBe Successful(LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0))
+        (Extractors.string.required.zonedDateTime('id) <--? "1970-01-01T00:00:00-00:00").toString shouldBe "Successful(1970-01-01T00:00Z)"
+        Extractors.string.required.bigDecimal('id) <--? "1.2345" shouldBe Successful(BigDecimal("1.2345"))
+        Extractors.string.required.uuid('id) <--? uuid.toString shouldBe Successful(uuid)
       }
 
       it("invalid") {
-        Extractors.string.required.int('id) <--? "" shouldBe Invalid('id -> "invalid int")
-        Extractors.string.required.long('id) <--? "" shouldBe Invalid('id -> "invalid long")
-        Extractors.string.required.double('id) <--? "" shouldBe Invalid('id -> "invalid double")
-        Extractors.string.required.float('id) <--? "" shouldBe Invalid('id -> "invalid float")
-        Extractors.string.required.boolean('id) <--? "" shouldBe Invalid('id -> "invalid boolean")
-        Extractors.string.required.char('id) <--? "" shouldBe Invalid('id -> "invalid char")
-        Extractors.string.required.localDate('id) <--? "" shouldBe Invalid('id -> "invalid localDate")
-        Extractors.string.required.localDateTime('id) <--? "" shouldBe Invalid('id -> "invalid localDateTime")
-        Extractors.string.required.zonedDateTime('id) <--? "" shouldBe Invalid('id -> "invalid zonedDateTime")
-        Extractors.string.required.bigDecimal('id) <--? "" shouldBe Invalid('id -> "invalid bigDecimal")
-        Extractors.string.required.uuid('id) <--? "" shouldBe Invalid('id -> "invalid uuid")
+        Extractors.string.required.int('id) <--? "" shouldBe Errors('id -> "invalid int")
+        Extractors.string.required.long('id) <--? "" shouldBe Errors('id -> "invalid long")
+        Extractors.string.required.double('id) <--? "" shouldBe Errors('id -> "invalid double")
+        Extractors.string.required.float('id) <--? "" shouldBe Errors('id -> "invalid float")
+        Extractors.string.required.boolean('id) <--? "" shouldBe Errors('id -> "invalid boolean")
+        Extractors.string.required.char('id) <--? "" shouldBe Errors('id -> "invalid char")
+        Extractors.string.required.localDate('id) <--? "" shouldBe Errors('id -> "invalid localDate")
+        Extractors.string.required.localDateTime('id) <--? "" shouldBe Errors('id -> "invalid localDateTime")
+        Extractors.string.required.zonedDateTime('id) <--? "" shouldBe Errors('id -> "invalid zonedDateTime")
+        Extractors.string.required.bigDecimal('id) <--? "" shouldBe Errors('id -> "invalid bigDecimal")
+        Extractors.string.required.uuid('id) <--? "" shouldBe Errors('id -> "invalid uuid")
       }
     }
 
     describe("string.optional") {
       it("success") {
-        Extractors.string.optional.int('id) <--? "1" shouldBe Extracted(1)
-        Extractors.string.optional.long('id) <--? "1" shouldBe Extracted(1)
-        Extractors.string.optional.double('id) <--? "1" shouldBe Extracted(1.0d)
-        Extractors.string.optional.float('id) <--? "1" shouldBe Extracted(1.0f)
-        (Extractors.string.optional.boolean('id) <--? "true") shouldBe Extracted(true)
-        Extractors.string.optional.char('id) <--? "1.2345" shouldBe Extracted('1')
-        Extractors.string.optional.localDate('id) <--? "2000-01-01" shouldBe Extracted(LocalDate.of(2000, 1, 1))
-        Extractors.string.optional.localDateTime('id) <--? "1970-01-01T00:00:00" shouldBe Extracted(LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0))
-        (Extractors.string.optional.zonedDateTime('id) <--? "1970-01-01T00:00:00-00:00").toString shouldBe "Extracted(1970-01-01T00:00Z)"
-        Extractors.string.optional.bigDecimal('id) <--? "1.2345" shouldBe Extracted(BigDecimal("1.2345"))
-        Extractors.string.optional.uuid('id) <--? uuid.toString shouldBe Extracted(uuid)
+        Extractors.string.optional.int('id) <--? "1" shouldBe Successful(1)
+        Extractors.string.optional.long('id) <--? "1" shouldBe Successful(1)
+        Extractors.string.optional.double('id) <--? "1" shouldBe Successful(1.0d)
+        Extractors.string.optional.float('id) <--? "1" shouldBe Successful(1.0f)
+        (Extractors.string.optional.boolean('id) <--? "true") shouldBe Successful(true)
+        Extractors.string.optional.char('id) <--? "1.2345" shouldBe Successful('1')
+        Extractors.string.optional.localDate('id) <--? "2000-01-01" shouldBe Successful(LocalDate.of(2000, 1, 1))
+        Extractors.string.optional.localDateTime('id) <--? "1970-01-01T00:00:00" shouldBe Successful(LocalDateTime.of(1970, 1, 1, 0, 0, 0, 0))
+        (Extractors.string.optional.zonedDateTime('id) <--? "1970-01-01T00:00:00-00:00").toString shouldBe "Successful(1970-01-01T00:00Z)"
+        Extractors.string.optional.bigDecimal('id) <--? "1.2345" shouldBe Successful(BigDecimal("1.2345"))
+        Extractors.string.optional.uuid('id) <--? uuid.toString shouldBe Successful(uuid)
       }
 
       it("missing") {
