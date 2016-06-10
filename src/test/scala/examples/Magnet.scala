@@ -4,9 +4,8 @@ import io.github.daviddenton.crossyfield.{Extracted, Extraction, Extractors, Inv
 
 import scala.language.implicitConversions
 
-
 class ExtractionM[In <: Product](extractors: Product, fn: () => In) extends Function[PartialFunction[In, String], Extraction[String]]{
-  private val toErrors = extractors
+  private val errors = extractors
     .productIterator
     .filter(_.isInstanceOf[Extraction[_]])
     .map(_.asInstanceOf[Extraction[_]]).
@@ -15,12 +14,12 @@ class ExtractionM[In <: Product](extractors: Product, fn: () => In) extends Func
     case _ => Nil
   }
 
-    override def apply(pf: PartialFunction[In, String]): Extraction[String] = if (toErrors.isEmpty) Extracted(pf(fn())) else Invalid(toErrors)
+    override def apply(pf: PartialFunction[In, String]): Extraction[String] = if (errors.isEmpty) Extracted(pf(fn())) else Invalid(errors)
 }
 
 object ExtractionM {
 
-  def apply[In <: Product](extractionMagnet: ExtractionM[In])(implicit desired: Manifest[In]) = extractionMagnet
+  def apply[In <: Product](extractionMagnet: ExtractionM[In]) = extractionMagnet
 
   implicit def t2ToMagnet[A, B](in: (Extraction[A], Extraction[B])): ExtractionM[(Option[A], Option[B])] = {
     new ExtractionM[(Option[A], Option[B])](in, () => (in._1.get, in._2.get))
@@ -34,7 +33,7 @@ object MagnetApp extends App {
   private val bbb = Extractors.string.required.int('asd2)
 
   private val m = ExtractionM(
-    int <--? "qwe",
+    int <--? "123",
     bbb <--? "321")
   println(m {
     case (a, b) => "asd " + a + b
