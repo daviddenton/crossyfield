@@ -17,15 +17,15 @@ class ExtractionM[In <: Product](val extractors: Product, val fn: () => In) {
     case _ => Nil
   }
 
-  def apply(a: Product) = new Function[PartialFunction[In, Result], Extraction[Result]] {
-    override def apply(pf: PartialFunction[In, Result]): Extraction[Result] = if (toErrors(a).isEmpty) Extracted(pf(fn())) else Invalid(toErrors(a))
+  def apply(a: ExtractionM[In]) = new Function[PartialFunction[In, Result], Extraction[Result]] {
+    override def apply(pf: PartialFunction[In, Result]): Extraction[Result] = if (toErrors(a.extractors).isEmpty) Extracted(pf(fn())) else Invalid(toErrors(a.extractors))
   }
 
 }
 
 object ExtractionM {
 
-  def apply[In <: Product](extractionMagnet: ExtractionM[In])(implicit desired: Manifest[In]) = extractionMagnet(extractionMagnet.extractors)
+  def apply[In <: Product](extractionMagnet: ExtractionM[In])(implicit desired: Manifest[In]) = extractionMagnet(extractionMagnet)
 
   implicit def t2ToMagnet[A, B](in: (Extraction[A], Extraction[B])): ExtractionM[(Option[A], Option[B])] = {
     new ExtractionM[(Option[A], Option[B])](in, () => (in._1.get, in._2.get))
