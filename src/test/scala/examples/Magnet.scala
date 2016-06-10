@@ -4,19 +4,10 @@ import scala.language.implicitConversions
 
 sealed trait ExtractedValue[T]
 
-class ArgExtractor[T](desired: Manifest[T]) {
-  def unapply[X](c: X)(implicit m: Manifest[X]): Option[T] = {
-    def sameArgs = desired.typeArguments.zip(m.typeArguments).forall { case (d, actual) => d >:> actual }
-    if (desired >:> m && sameArgs) Some(c.asInstanceOf[T])
-    else None
-  }
-}
-
 class Magnet[In](in: In) {
   type Result = String
   def apply(implicit desired: Manifest[In]) = new Function[PartialFunction[In, Result], Result] {
-    val Args = new ArgExtractor[In](desired)
-    override def apply(pf: PartialFunction[In, Result]): Result = pf(Args.unapply(in).get)
+    override def apply(pf: PartialFunction[In, Result]): Result = pf(in)
   }
 }
 
@@ -30,11 +21,11 @@ object Magnet {
 }
 
 object MagnetApp extends App {
-
   private val it1 = Magnet(Option(1), Option(3))
   private val out = it1 {
     case (a, b) => "asd " + a + b
   }
+
   println(out)
 
 }
