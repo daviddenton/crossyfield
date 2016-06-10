@@ -2,7 +2,7 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Extractors, Validation}
+import io.github.daviddenton.crossyfield.Extractors
 
 object CollectErrors extends App {
 
@@ -18,7 +18,7 @@ object CollectErrors extends App {
     * Because we are interested in collecting ALL of the errors, we can't use cross-field extraction here
     * - use a Validation instead
     */
-  def validate(input: SomeDateStrings) = Validation.mk(
+  def validate(input: SomeDateStrings) = Validator.mk(
     dateExtractor('theFuture) <--?(input.futureDate, "must be after the millennium", _.isAfter(millennium)),
     dateExtractor('anyOldDate) <--? input.oldDate,
     dateExtractor('thePast) <--?(input.pastDate, "must be before the millennium", _.isBefore(millennium))
