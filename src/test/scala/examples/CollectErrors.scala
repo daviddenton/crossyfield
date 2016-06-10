@@ -2,7 +2,7 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.Extractors
+import io.github.daviddenton.crossyfield.{Extractors, Validator}
 
 object CollectErrors extends App {
 
