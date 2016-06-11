@@ -69,7 +69,7 @@ object Examples extends App {
     println("\nall ok: " + fn("2000-01-02,2001-01-02,someothervalues"))
     println("missing end date: " + fn("2000-01-02,,someothervalues"))
     println("(CROSS FIELD) end date is before start: " + fn("2000-01-02,1999-01-02,someothervalues"))
-    println("invalid dates: " + fn("qqqq-01-02,rrrr-01-02,someothervalues"))
+    println("(ERROR COLLECTION) invalid dates: " + fn("qqqq-01-02,rrrr-01-02,someothervalues"))
     println("\n")
   }
 
