@@ -39,7 +39,7 @@ object Extractor {
   }
 
   /**
-    * Constructs a simple Mandatory Extractor for from a function, returns either Extracted or Invalid upon
+    * Constructs a simple Mandatory Extractor for from a function, returns either Extracted or ExtractionFailed upon
     * an failure from the function
     */
   def mk[From, T](id: Symbol, message: String, fn: From => T): Extractor[From, T] = new Extractor[From, T] {
