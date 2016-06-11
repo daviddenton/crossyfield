@@ -3,18 +3,6 @@ package io.github.daviddenton.crossyfield
 object Extraction {
 
   /**
-    * Utility method for combining the results of many Extraction into a single Extraction, simply to get an overall
-    * extraction result in the case of failure.
-    */
-  def <--?(extractions: Seq[Extraction[_]]): Extraction[Nothing] = {
-    val missingOrFailed = extractions.flatMap {
-      case ExtractionFailed(ip) => ip
-      case _ => Nil
-    }
-    if (missingOrFailed.isEmpty) NotProvided else ExtractionFailed(missingOrFailed)
-  }
-
-  /**
     * Wraps in a successful Extraction - this assumes the object was not mandatory.
     */
   def apply[T](t: Option[T]): Extraction[T] = t.map(Extracted(_)).getOrElse(NotProvided)
@@ -70,15 +58,11 @@ object NotProvided extends Extraction[Nothing] {
 /**
   * Represents a object which could not be extracted due to it being invalid or missing when required.
   */
-case class ExtractionFailed(errors: Seq[Error]) extends Extraction[Nothing] {
-  def flatMap[O](f: Option[Nothing] => Extraction[O]) = ExtractionFailed(errors)
+case class ExtractionFailed(error: Error) extends Extraction[Nothing] {
+  def flatMap[O](f: Option[Nothing] => Extraction[O]) = ExtractionFailed(error)
 
-  override def map[O](f: Option[Nothing] => O) = ExtractionFailed(errors)
+  override def map[O](f: Option[Nothing] => O) = ExtractionFailed(error)
 
   override def orDefault[T](f: => T): Extraction[T] = this
-}
-
-object ExtractionFailed {
-  def apply(p: Error): ExtractionFailed = ExtractionFailed(Seq(p))
 }
 

@@ -3,8 +3,12 @@ package io.github.daviddenton.crossyfield
 import scala.language.implicitConversions
 
 class Validator[In <: Product] private(extractors: Product, value: => In) {
-  private val errors = extractors.productIterator.filter(_.isInstanceOf[Extraction[_]]).map(_.asInstanceOf[Extraction[_]]).toList.flatMap {
-    case ExtractionFailed(q) => q
+  private val errors = extractors
+    .productIterator
+    .filter(_.isInstanceOf[Extraction[_]])
+    .map(_.asInstanceOf[Extraction[_]]).toList
+    .flatMap {
+    case ExtractionFailed(q) => Seq(q)
     case _ => Nil
   }
 

@@ -112,12 +112,12 @@ class ExtractorTest extends FunSpec with ShouldMatchers {
       it("toString") {
         Extracted(1).toString shouldBe "Extracted(1)"
         NotProvided.toString shouldBe "NotProvided"
-        ExtractionFailed(Seq('ex -> "invalid", 'ex -> "missing")).toString shouldBe "ExtractionFailed(List(('ex,invalid), ('ex,missing)))"
+        ExtractionFailed('ex -> "invalid").toString shouldBe "ExtractionFailed(('ex,invalid))"
       }
       it("map") {
         Extracted(1).map(_ => 1) shouldBe Extracted(1)
         NotProvided.map(_ => 1) shouldBe Extracted(1)
-        ExtractionFailed(Seq('ex -> "invalid", 'ex -> "missing")).map(_ => 1) shouldBe ExtractionFailed(Seq('ex -> "invalid", 'ex -> "missing"))
+        ExtractionFailed('ex -> "invalid").map(_ => 1) shouldBe ExtractionFailed('ex -> "invalid")
       }
 
       it("flatten") {
@@ -125,12 +125,6 @@ class ExtractorTest extends FunSpec with ShouldMatchers {
         Extraction.flatten(Extracted(None)) shouldBe NotProvided
         Extraction.flatten(Extracted(Some(1))) shouldBe Extracted(1)
         Extraction.flatten(ExtractionFailed('ex -> "invalid")) shouldBe ExtractionFailed('ex -> "invalid")
-      }
-
-      it("<--?") {
-        Extraction.<--?(Seq(NotProvided, NotProvided)) shouldBe NotProvided
-        Extraction.<--?(Seq(Extracted(1), Extracted(1))) shouldBe NotProvided
-        Extraction.<--?(Seq(NotProvided, Extracted(1), ExtractionFailed('ex -> "missing"), ExtractionFailed('ex -> "invalid"))) shouldBe ExtractionFailed(Seq('ex -> "missing", 'ex -> "invalid"))
       }
     }
   }
