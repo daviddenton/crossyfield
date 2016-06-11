@@ -19,7 +19,7 @@ trait Extractor[-From, +T] {
     * Performs extraction and applies the predicate to achieve a result.
     */
   final def <--?(from: From, error: String, predicate: T => Boolean): Extraction[T] =
-    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Extraction(v) else Errors((identifier, error)))
+    <--?(from).flatMap[T](v => if (v.map(predicate).getOrElse(true)) Extraction(v) else ExtractionFailed((identifier, error)))
 
   /**
     * Performs extraction and applies the predicate to achieve a result. Synonym for <--?().
@@ -46,8 +46,8 @@ object Extractor {
     override val identifier: Symbol = id
 
     override def <--?(from: From): Extraction[T] = Try(fn(from)) match {
-      case Success(value) => Successful(value)
-      case Failure(e) => Errors(identifier, message)
+      case Success(value) => Extracted(value)
+      case Failure(e) => ExtractionFailed(identifier, message)
     }
   }
 }

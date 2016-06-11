@@ -1,10 +1,6 @@
 package io.github.daviddenton.crossyfield
 
-import io.github.daviddenton.crossyfield.Extraction.ExtractionError
-
 object Extraction {
-
-  type ExtractionError = (Symbol, String)
 
   /**
     * Utility method for combining the results of many Extraction into a single Extraction, simply to get an overall
@@ -12,25 +8,25 @@ object Extraction {
     */
   def <--?(extractions: Seq[Extraction[_]]): Extraction[Nothing] = {
     val missingOrFailed = extractions.flatMap {
-      case Errors(ip) => ip
+      case ExtractionFailed(ip) => ip
       case _ => Nil
     }
-    if (missingOrFailed.isEmpty) NotProvided else Errors(missingOrFailed)
+    if (missingOrFailed.isEmpty) NotProvided else ExtractionFailed(missingOrFailed)
   }
 
   /**
     * Wraps in a successful Extraction - this assumes the object was not mandatory.
     */
-  def apply[T](t: Option[T]): Extraction[T] = t.map(Successful(_)).getOrElse(NotProvided)
+  def apply[T](t: Option[T]): Extraction[T] = t.map(Extracted(_)).getOrElse(NotProvided)
 
   /**
     * For optional cases, you can use this to convert an Extraction(None) -> NotProvided
     */
   def flatten[T](extraction: Extraction[Option[T]]): Extraction[T] =
     extraction match {
-      case Successful(opt) => opt.map(Successful(_)).getOrElse(NotProvided)
+      case Extracted(opt) => opt.map(Extracted(_)).getOrElse(NotProvided)
       case NotProvided => NotProvided
-      case Errors(ip) => Errors(ip)
+      case ExtractionFailed(ip) => ExtractionFailed(ip)
     }
 }
 
@@ -49,10 +45,10 @@ sealed trait Extraction[+T] {
 /**
   * Represents a object which was provided and extracted successfully.
   */
-case class Successful[T](value: T) extends Extraction[T] {
+case class Extracted[T](value: T) extends Extraction[T] {
   def flatMap[O](f: Option[T] => Extraction[O]) = f(Some(value))
 
-  override def map[O](f: Option[T] => O) = Successful(f(Some(value)))
+  override def map[O](f: Option[T] => O) = Extracted(f(Some(value)))
 
   override def orDefault[O >: T](f: => O): Extraction[O] = this
 }
@@ -66,23 +62,23 @@ object NotProvided extends Extraction[Nothing] {
 
   def flatMap[O](f: Option[Nothing] => Extraction[O]) = f(None)
 
-  override def map[O](f: Option[Nothing] => O) = Successful(f(None))
+  override def map[O](f: Option[Nothing] => O) = Extracted(f(None))
 
-  override def orDefault[T](f: => T): Extraction[T] = Successful(f)
+  override def orDefault[T](f: => T): Extraction[T] = Extracted(f)
 }
 
 /**
   * Represents a object which could not be extracted due to it being invalid or missing when required.
   */
-case class Errors(invalid: Seq[ExtractionError]) extends Extraction[Nothing] {
-  def flatMap[O](f: Option[Nothing] => Extraction[O]) = Errors(invalid)
+case class ExtractionFailed(errors: Seq[Error]) extends Extraction[Nothing] {
+  def flatMap[O](f: Option[Nothing] => Extraction[O]) = ExtractionFailed(errors)
 
-  override def map[O](f: Option[Nothing] => O) = Errors(invalid)
+  override def map[O](f: Option[Nothing] => O) = ExtractionFailed(errors)
 
   override def orDefault[T](f: => T): Extraction[T] = this
 }
 
-object Errors {
-  def apply(p: ExtractionError): Errors = Errors(Seq(p))
+object ExtractionFailed {
+  def apply(p: Error): ExtractionFailed = ExtractionFailed(Seq(p))
 }
 

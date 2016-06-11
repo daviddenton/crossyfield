@@ -4,19 +4,20 @@ import scala.language.implicitConversions
 
 class Validator[In <: Product] private(extractors: Product, value: => In) {
   private val errors = extractors.productIterator.filter(_.isInstanceOf[Extraction[_]]).map(_.asInstanceOf[Extraction[_]]).toList.flatMap {
-    case Errors(q) => q
+    case ExtractionFailed(q) => q
     case _ => Nil
   }
 
-  def apply[Result](pf: Function[In, Result]): Extraction[Result] = if (errors.isEmpty) Successful(pf(value)) else Errors(errors)
+  def apply[Result](pf: Function[In, Result]): Validation[Result] =
+    if (errors.isEmpty) Validated(pf(value)) else ValidationFailed(errors)
 }
 
 object Validator {
 
   private def extract[T](e: Extraction[T]): Option[T] = e match {
-    case Successful(v) => Some(v)
+    case Extracted(v) => Some(v)
     case NotProvided => None
-    case Errors(_) => None
+    case ExtractionFailed(_) => None
   }
 
   def mk[In <: Product](validation: Validator[In]) = validation

@@ -2,7 +2,7 @@ package examples
 
 import java.time.LocalDate
 
-import io.github.daviddenton.crossyfield.{Errors, Extractor, Extractors}
+import io.github.daviddenton.crossyfield.{ExtractionFailed, Extractor, Extractors}
 
 import scala.util.{Success, Try}
 
@@ -21,7 +21,7 @@ object CrossFieldValidation extends App {
       Try(in.split(",")(index)) match {
         case Success(dateStr) if required => Extractors.string.required.localDate(id) <--? dateStr
         case Success(dateStr) => Extractors.string.optional.localDate(id) <--? dateStr
-        case _ => Errors(id -> s"Missing date at index $index")
+        case _ => ExtractionFailed(id -> s"Missing date at index $index")
       }
   }
 
