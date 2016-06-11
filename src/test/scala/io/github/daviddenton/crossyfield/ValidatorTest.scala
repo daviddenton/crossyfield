@@ -18,6 +18,14 @@ class ValidatorTest extends FunSpec with ShouldMatchers {
         NotProvided
       ) { case (first, second) => (first, second) } shouldBe Successful((Some(1), None))
     }
+
+    it("all NotProvided") {
+      Validator.mk(
+        NotProvided,
+        NotProvided
+      ) { case (first, second) => (first, second) } shouldBe Successful((None, None))
+    }
+
     it("collects Errors") {
       Validator.mk(
         Errors('ex1 -> "invalid1"),
