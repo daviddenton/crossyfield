@@ -23,7 +23,7 @@ object CollectErrors extends App {
     dateExtractor('anyOldDate) <--? input.oldDate,
     dateExtractor('thePast) <--?(input.pastDate, "must be before the millennium", _.isBefore(millennium))
   ) {
-    case (a, b, c) => s"validated ok: $a, $b, $c"
+    case (future, old, past) => s"validated ok: $future, $old, $past"
   }
 
   println(validate(SomeDateStrings("2010-01-01", "2000-01-01", "1999-01-01")))
